@@ -1,13 +1,14 @@
-# Sample Hardhat Project
+# Use The following instructions to run and test 
+# smart contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+# This project relies on using hardhat for running a Etherium node locally
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.js
-```
+# git clone https://github.com/Pratik-RC/CSE540_Fall25_Project-Group-9.git
+# cd CSE540_Fall25_Project-Group-9
+# npm install --legacy-peer-deps
+# npx hardhat compile
+# Run the node locally : npx hardhat node
+# Keep the node running and open a new terminal to deploy the contract
+# npx hardhat run scripts/deploy.js --network localhost
+# Run the following command to test the chain with a sample product
+# npx hardhat run scripts/test_contract.js --network localhost
