@@ -1,4 +1,4 @@
-Smart Contract Powered Coffee Traceability System : 
+Smart Contract Powered Premium Coffee Traceability System : 
 This project demonstrates how blockchain technology can be used to create a transparent and traceable coffee supply chain. Using smart contracts written in Solidity and deployed on a local Ethereum network using Hardhat, this system tracks the journey of a coffee batch across different stakeholders:
 Producer → Certifying Authority → Distributors → Retailer
 Each step in the lifecycle is recorded on the blockchain and becomes immutable and verifiable, ensuring:
@@ -56,6 +56,8 @@ git clone https://github.com/Pratik-RC/CSE540_Fall25_Project-Group-9.git
 cd CSE540_Fall25_Project-Group-9
 
 npm install --legacy-peer-deps
+
+npm install @nomicfoundation/hardhat-toolbox
 
 npx hardhat compile
 
