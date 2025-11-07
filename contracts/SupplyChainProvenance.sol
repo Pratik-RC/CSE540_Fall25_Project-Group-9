@@ -5,6 +5,7 @@ import "./access/RoleManagement.sol";
 import "./libraries/ProductLibrary.sol";
 import "./interfaces/SupplyChain.sol";
 
+// Main contract for this SupplyChainProvenanceSystem
 contract SupplyChainProvenance is RoleManagement, SupplyChain {
     
     uint256 public productCounter;

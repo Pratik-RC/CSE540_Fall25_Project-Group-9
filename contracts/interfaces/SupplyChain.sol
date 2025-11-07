@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// Defines the basic product tracking functionalities to be supported on this chain
 interface SupplyChain {
     
     function createProduct(

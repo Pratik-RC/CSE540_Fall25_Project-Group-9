@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+//Defines the product lifecyle events and enables full lifecyle tracking
 library JourneyTracker {
     
     enum EventType {

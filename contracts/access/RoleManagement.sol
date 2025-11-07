@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// Interface to control who has which access and to allow only owner assign these roles.
 contract RoleManagement {
     
     address public contractOwner;

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
+// Interface to help keep track of different participants in the block chain and manage their access
 contract IdentityRegistry {
     
     struct Identity {
