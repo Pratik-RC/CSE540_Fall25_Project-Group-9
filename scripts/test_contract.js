@@ -1,7 +1,8 @@
 async function main() {
   const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // UPDATE THIS
   
-  const [owner, producer, certifier1, certifier2, distributor1, distributor2, retailer] = await ethers.getSigners();
+  // Match the account names from deploy.js
+  const [owner, producer, certifier, distributor, retailer] = await ethers.getSigners();
   
   const SupplyChainProvenance = await ethers.getContractFactory("SupplyChainProvenance");
   const contract = SupplyChainProvenance.attach(contractAddress);
@@ -19,7 +20,7 @@ async function main() {
 
   const receipt1 = await tx1.wait();
 
-  // read productId from ProductCreated event
+  // Read productId from ProductCreated event
   let productId;
   for (const log of receipt1.logs) {
     try {
@@ -38,7 +39,7 @@ async function main() {
     productId = 1;
   }
 
-  // normalize product id and print
+  // Normalize product id and print
   const pid = typeof productId.toNumber === "function" ? productId.toNumber() : Number(productId);
   console.log(`Product created — id: ${pid}, quantity: 100\n`);
   
@@ -53,7 +54,7 @@ async function main() {
   
   // Step 3: Certifier tests product
   console.log("Step 3 — certifier: recording test results...");
-  const tx2 = await contract.connect(certifier1).testProduct(
+  const tx2 = await contract.connect(certifier).testProduct(
     pid,
     "Quality Lab, Bogota",
     "Passed all organic certification tests. Grade: AAA"
@@ -64,7 +65,7 @@ async function main() {
   
   // Step 4: Certifier ships product
   console.log("Step 4 — certifier: arranging shipment to logistics partner...");
-  const tx3 = await contract.connect(certifier1).shipProduct(
+  const tx3 = await contract.connect(certifier).shipProduct(
     pid,
     "Pacific Logistics Warehouse, Los Angeles",
     "Shipped via air freight",
@@ -75,7 +76,7 @@ async function main() {
   
   // Step 5: Distributor receives product
   console.log("Step 5 — distributor: acknowledging receipt...");
-  const tx4 = await contract.connect(distributor1).receiveProduct(
+  const tx4 = await contract.connect(distributor).receiveProduct(
     pid,
     "Los Angeles Distribution Center",
     "Received in good condition, stored at 15°C",
@@ -86,7 +87,7 @@ async function main() {
   
   // Step 6: Distributor ships to retailer
   console.log("Step 6 — distributor: shipping to retailer...");
-  const tx5 = await contract.connect(distributor1).shipProduct(
+  const tx5 = await contract.connect(distributor).shipProduct(
     pid,
     "Premium Coffee House, Seattle",
     "Express delivery, refrigerated transport",
