@@ -43,8 +43,11 @@ library ProductLibrary {
         uint256 producedTimestamp;
         bool exists;
         bool fullyDelivered;
+        address currentHolder;
+        string destinationRole;  // "certifier", "distributor", "retailer"
         JourneyLog[] journey;
     }
+
     
     function statusToString(Status status) internal pure returns (string memory) {
         if (status == Status.Produced) return "Produced";

@@ -20,10 +20,12 @@ interface SupplyChain {
     
     function shipProduct(
         uint256 _productId,
+        string memory _roleType,
         string memory _destination,
         string memory _notes,
         uint256 _quantityShipping
     ) external;
+
     
     function receiveProduct(
         uint256 _productId,
