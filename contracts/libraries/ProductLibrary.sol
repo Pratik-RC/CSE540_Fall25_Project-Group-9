@@ -14,10 +14,8 @@ library ProductLibrary {
     enum ActionType {
         Created,
         Tested,
-        ShippedFromCertifier,
-        ReceivedByDistributor,
-        ShippedFromDistributor,
-        ReceivedByRetailer,
+        Shipped,
+        Received,
         Delivered
     }
     
@@ -61,10 +59,8 @@ library ProductLibrary {
     function actionToString(ActionType action) internal pure returns (string memory) {
         if (action == ActionType.Created) return "Product Created";
         if (action == ActionType.Tested) return "Quality Tested";
-        if (action == ActionType.ShippedFromCertifier) return "Shipped from Certifier";
-        if (action == ActionType.ReceivedByDistributor) return "Received by Distributor";
-        if (action == ActionType.ShippedFromDistributor) return "Shipped from Distributor";
-        if (action == ActionType.ReceivedByRetailer) return "Received by Retailer";
+        if (action == ActionType.Shipped) return "Shipped";
+        if (action == ActionType.Received) return "Received";
         if (action == ActionType.Delivered) return "Delivered";
         return "Unknown";
     }
