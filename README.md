@@ -36,6 +36,14 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 9. Run the following command to test the chain with a sample product
 10. npx hardhat run scripts/test_contract.js --network localhost
 
+** Metamask Wallet Setup instructions ** 
+1. Add metamask wallet chrom extension to your browser and create an account / login if u already did
+2. Open the metamask extension in your browser window -> Accounts -> Add wallet -> Import An account -> Paste the private key of the wallet there
+3. This will link the respective wallet to the metamask extension. Repeat the step 2 from here on whenever we need to add a new entity to this chain.
+4. We will be working with wallets created by hardhat at node creation for this project.
+5. The first wallet is hardcoded to be the owner of this chain, so use the first private key listed when running npx hardhat node and add it to metamask. (We will refer this as contract owner from here on)
+6. TBD : List down further accounts to be added into metamask
+
 #### High-Level Component Design
 
 **SupplyChain.sol**  
