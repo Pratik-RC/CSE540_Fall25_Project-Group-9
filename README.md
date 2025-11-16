@@ -52,10 +52,11 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 **User-Interface instructions**
 1. cd into the supply-chain-frontend directory
 2. if doing for first time, do an npm install to get all necessary packages
-3. do an npm start and u should have the UI launched.
-4. Now you can switch through different accounts in metamask and see the corresponding UI pages loaded.
-5. If your wallet is currently not role provisioned, you shall be navigated to role request page once commissioned.
-6. Ability to view product history without role is yet to be implemented.
+3. Copy the contract address from deploy script and paste it in src/utils/contract.js
+4. do an npm start and u should have the UI launched.
+5. Now you can switch through different accounts in metamask and see the corresponding UI pages loaded.
+6. If your wallet is currently not role provisioned, you shall be navigated to role request page once commissioned.
+7. Ability to view product history without role is yet to be implemented.
 
 #### High-Level Component Design
 
