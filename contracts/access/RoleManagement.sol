@@ -11,7 +11,6 @@ contract RoleManagement {
     mapping(address => bool) public retailers;
     mapping(address => string) public entityNames;
     
-    // NEW: Role requests
     struct RoleRequest {
         address requester;
         string name;
@@ -56,9 +55,7 @@ contract RoleManagement {
     constructor() {
         owner = msg.sender;
     }
-    
-    // ===== NEW: Role Request Functions =====
-    
+        
     function requestProducerRole(string memory _name) public {
         require(!producers[msg.sender], "Already a producer");
         require(!roleRequests[msg.sender].pending, "Request already pending");
@@ -187,9 +184,7 @@ contract RoleManagement {
             request.pending
         );
     }
-    
-    // ADD THESE NEW HELPER FUNCTIONS:
-    
+        
     // Check if address has pending role request
     function hasPendingRoleRequest(address _address) public view returns (bool) {
         return roleRequests[_address].pending;
@@ -223,7 +218,6 @@ contract RoleManagement {
         }
     }
     
-    // ===== Original Functions (Keep These) =====
     
     function assignProducer(address _producer, string memory _name) public onlyOwner {
         producers[_producer] = true;
