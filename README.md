@@ -42,7 +42,12 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 3. This will link the respective wallet to the metamask extension. Repeat the step 2 from here on whenever we need to add a new entity to this chain.
 4. We will be working with wallets created by hardhat at node creation for this project.
 5. The first wallet is hardcoded to be the owner of this chain, so use the first private key listed when running npx hardhat node and add it to metamask. (We will refer this as contract owner from here on)
-6. TBD : List down further accounts to be added into metamask
+6. Add the following accounts to your metamask wallet for testing purposes :
+7. Contract owner, pvt key : 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+8. Producer, pvt key : 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+9. Certifier, pvt key : 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+10. Distributor, pvt key : 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
+11. Retailer, pvt key : 0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a
 
 #### High-Level Component Design
 
