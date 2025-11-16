@@ -188,6 +188,30 @@ contract RoleManagement {
         );
     }
     
+    // ADD THESE NEW HELPER FUNCTIONS:
+    
+    // Check if address has pending role request
+    function hasPendingRoleRequest(address _address) public view returns (bool) {
+        return roleRequests[_address].pending;
+    }
+    
+    // Simple boolean checkers for roles
+    function isProducer(address _address) public view returns (bool) {
+        return producers[_address];
+    }
+    
+    function isCertifier(address _address) public view returns (bool) {
+        return certifyingAuthorities[_address];
+    }
+    
+    function isDistributor(address _address) public view returns (bool) {
+        return distributors[_address];
+    }
+    
+    function isRetailer(address _address) public view returns (bool) {
+        return retailers[_address];
+    }
+    
     // Helper function to remove from pending array
     function removePendingRequest(address _requester) private {
         for (uint256 i = 0; i < pendingRequests.length; i++) {

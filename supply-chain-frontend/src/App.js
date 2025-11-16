@@ -3,68 +3,123 @@ import { ethers } from 'ethers';
 import WalletConnect from './components/WalletConnect';
 import AdminDashboard from './components/AdminDashboard';
 import RoleRequestForm from './components/RoleRequestForm';
-import { CONTRACT_ADDRESS, CONTRACT_ABI, OWNER_ADDRESS } from './utils/contract';
+import PendingApproval from './components/PendingApproval';
+import ProducerDashboard from './components/ProducerDashboard';
+import CertifierDashboard from './components/CertifierDashboard';
+import DistributorDashboard from './components/DistributorDashboard';
+import RetailerDashboard from './components/RetailerDashboard';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from './utils/contract';
 import './App.css';
+
 
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [account, setAccount] = useState('');
   const [signer, setSigner] = useState(null);
   const [provider, setProvider] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
+  const [userRole, setUserRole] = useState(null); // 'owner', 'producer', 'certifier', 'distributor', 'retailer', 'pending', 'none'
   const [loading, setLoading] = useState(false);
+
 
   // Handle wallet connection
   const handleWalletConnect = async ({ account, provider, signer }) => {
+    console.log('Wallet connected:', account);
     setAccount(account);
     setProvider(provider);
     setSigner(signer);
     setWalletConnected(true);
 
-    // Check if connected account is the owner
-    await checkOwnership(account, signer);
+    // Check user's role
+    await checkUserRole(account, signer);
   };
 
-  // Check if the connected account is the contract owner
-  const checkOwnership = async (account, signer) => {
+
+// Check user's role in the system
+const checkUserRole = async (account, signer) => {
   setLoading(true);
   try {
-    console.log('=== Starting Ownership Check ===');
+    console.log('=== Starting Role Check ===');
     console.log('Contract Address:', CONTRACT_ADDRESS);
     console.log('Connected Account:', account);
     
-    // First, check if there's code at the contract address
-    const provider = await signer.provider;
-    const code = await provider.getCode(CONTRACT_ADDRESS);
-    console.log('Contract code length:', code.length);
+    // Get a FRESH provider directly from window.ethereum
+    const provider = new ethers.BrowserProvider(window.ethereum);
     
+    // Check chain ID
+    const network = await provider.getNetwork();
+    console.log('Connected to Chain ID:', network.chainId.toString());
+    
+    if (network.chainId.toString() !== '1337') {
+      console.error('❌ WRONG NETWORK! You are on chain ID:', network.chainId.toString());
+      throw new Error(`Wrong network! Please switch to Localhost 8545`);
+    }
+    
+    // Check contract exists
+    const code = await provider.getCode(CONTRACT_ADDRESS);
     if (code === '0x') {
+      console.error('❌ NO CONTRACT AT ADDRESS');
       throw new Error('No contract deployed at this address');
     }
     
+    console.log('✅ Contract found');
+    
     // Create contract instance
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-    console.log('Contract instance created');
     
-    // Call owner function
+    // Check if owner
     const ownerAddress = await contract.owner();
-    console.log('Contract Owner:', ownerAddress);
-    console.log('Connected Account:', account);
+    if (ownerAddress.toLowerCase() === account.toLowerCase()) {
+      console.log('✅ User is Owner');
+      setUserRole('owner');
+      return;
+    }
     
-    // Compare addresses
-    const isOwnerAccount = ownerAddress.toLowerCase() === account.toLowerCase();
-    console.log('Is Owner?', isOwnerAccount);
+    // Clean boolean role checks
+    if (await contract.isProducer(account)) {
+      console.log('✅ User is Producer');
+      setUserRole('producer');
+      return;
+    }
     
-    setIsOwner(isOwnerAccount);
+    if (await contract.isCertifier(account)) {
+      console.log('✅ User is Certifier');
+      setUserRole('certifier');
+      return;
+    }
+    
+    if (await contract.isDistributor(account)) {
+      console.log('✅ User is Distributor');
+      setUserRole('distributor');
+      return;
+    }
+    
+    if (await contract.isRetailer(account)) {
+      console.log('✅ User is Retailer');
+      setUserRole('retailer');
+      return;
+    }
+    
+    // Check if has pending role request
+    if (await contract.hasPendingRoleRequest(account)) {
+      console.log('⏳ User has pending role request');
+      setUserRole('pending');
+      return;
+    }
+    
+    // No role - new user
+    console.log('ℹ️ User has no role - showing request form');
+    setUserRole('none');
+    
   } catch (err) {
     console.error('=== Error Details ===');
     console.error('Error:', err);
-    console.error('Error message:', err.message);
-    setIsOwner(false);
+    setUserRole('none');
   } finally {
     setLoading(false);
   }
 };
+
+
 
 
   // Listen for account changes
@@ -76,7 +131,7 @@ function App() {
         } else {
           setWalletConnected(false);
           setAccount('');
-          setIsOwner(false);
+          setUserRole(null);
         }
       });
 
@@ -93,7 +148,8 @@ function App() {
     };
   }, []);
 
-  // Render appropriate component based on state
+
+  // Render appropriate component based on user role
   const renderContent = () => {
     if (!walletConnected) {
       return <WalletConnect onConnect={handleWalletConnect} />;
@@ -102,17 +158,37 @@ function App() {
     if (loading) {
       return (
         <div className="loading-container">
-          <p>Loading...</p>
+          <p>Checking your role...</p>
         </div>
       );
     }
 
-    if (isOwner) {
-      return <AdminDashboard account={account} signer={signer} />;
-    } else {
-      return <RoleRequestForm account={account} signer={signer} />;
+    // Route based on role
+    switch (userRole) {
+      case 'owner':
+        return <AdminDashboard account={account} signer={signer} />;
+      
+      case 'producer':
+        return <ProducerDashboard account={account} signer={signer} />;
+      
+      case 'certifier':
+        return <CertifierDashboard account={account} signer={signer} />;
+      
+      case 'distributor':
+        return <DistributorDashboard account={account} signer={signer} />;
+      
+      case 'retailer':
+        return <RetailerDashboard account={account} signer={signer} />;
+      
+      case 'pending':
+        return <PendingApproval account={account} />;
+      
+      case 'none':
+      default:
+        return <RoleRequestForm account={account} signer={signer} />;
     }
   };
+
 
   return (
     <div className="App">
@@ -120,5 +196,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;
