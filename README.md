@@ -49,6 +49,14 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 10. Distributor, pvt key : 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
 11. Retailer, pvt key : 0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a
 
+**User-Interface instructions**
+1. cd into the supply-chain-frontend directory
+2. if doing for first time, do an npm install to get all necessary packages
+3. do an npm start and u should have the UI launched.
+4. Now you can switch through different accounts in metamask and see the corresponding UI pages loaded.
+5. If your wallet is currently not role provisioned, you shall be navigated to role request page once commissioned.
+6. Ability to view product history without role is yet to be implemented.
+
 #### High-Level Component Design
 
 **SupplyChain.sol**  
