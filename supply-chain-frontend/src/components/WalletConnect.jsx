@@ -1,69 +1,65 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ethers } from 'ethers';
 import './WalletConnect.css';
 
 function WalletConnect({ onConnect }) {
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const connectWallet = async () => {
-    setLoading(true);
-    setError('');
+    if (!window.ethereum) {
+      setError('Please install MetaMask!');
+      return;
+    }
 
     try {
-      // Check if MetaMask is installed
-      if (!window.ethereum) {
-        setError('MetaMask is not installed. Please install MetaMask to continue.');
-        setLoading(false);
-        return;
-      }
-
-      // Request account access
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      });
-      console.log('Connected account:', accounts[0]);
-      const account = accounts[0];
-      
-      // Create provider and signer
+      setError('');
       const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
       const signer = await provider.getSigner();
 
-      // Pass connection info to parent
-      onConnect({ account, provider, signer });
-
+      onConnect({
+        account: accounts[0],
+        provider: provider,
+        signer: signer
+      });
     } catch (err) {
       console.error('Error connecting wallet:', err);
-      setError('Failed to connect wallet. Please try again.');
-    } finally {
-      setLoading(false);
+      setError('Failed to connect wallet');
     }
   };
 
   return (
     <div className="wallet-connect-container">
       <div className="wallet-connect-card">
-        <h1>Supply Chain Provenance</h1>
-        <p className="subtitle">Role Management System</p>
+        <h1>🔗 Supply Chain Provenance</h1>
+        <p className="tagline">Blockchain-Powered Product Tracking</p>
         
-        <div className="connect-section">
-          <p>Connect your MetaMask wallet to continue</p>
-          
+        {/* Public Tracker Button - NEW */}
+        <div className="public-section">
+          <h3>🔍 Verify Product Authenticity</h3>
+          <p>Track a Product (Simple scan)</p>
           <button 
-            className="connect-button" 
-            onClick={connectWallet}
-            disabled={loading}
+            className="track-product-btn"
+            onClick={() => navigate('/track')}
           >
-            {loading ? 'Connecting...' : 'Connect Wallet'}
+            Track Product
           </button>
-
-          {error && <p className="error-message">{error}</p>}
         </div>
-
-        <div className="info-section">
-          <p className="info-text">
-            Make sure you're connected to the Hardhat local network (Chain ID: 31337)
-          </p>
+        
+        <div className="divider">
+          <span>or</span>
+        </div>
+        
+        {/* Wallet Connect Section */}
+        <div className="connect-section">
+          <h3>Supply Chain Participant?</h3>
+          <p>Connect your wallet to manage products</p>
+          <button className="connect-btn" onClick={connectWallet}>
+            🦊 Connect MetaMask
+          </button>
+          {error && <p className="error-message">{error}</p>}
         </div>
       </div>
     </div>
