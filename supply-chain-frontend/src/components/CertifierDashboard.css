@@ -1,0 +1,86 @@
+.certifier-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* Left Panel - Different color scheme for Certifier */
+.certifier-dashboard .left-panel {
+  width: 300px;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); /* Teal gradient */
+  padding: 20px;
+  color: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+/* Large screen optimization */
+@media (min-width: 1200px) {
+  .certifier-dashboard .left-panel {
+    width: 25%;
+    min-width: 280px;
+    max-width: 400px;
+  }
+}
+
+/* Rest of the styles same as Producer - just copy them over */
+/* ... (all the other CSS from ProducerDashboard.css) ... */
+
+/* Additional styles for certifier-specific elements */
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.certify-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.reject-btn {
+  flex: 1;
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reject-btn:hover {
+  background: #c82333;
+}
+
+.info-message {
+  background: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.action-section {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.action-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.manage-section {
+  max-width: 900px;
+}
+
+.manage-form-container {
+  margin-top: 24px;
+}
