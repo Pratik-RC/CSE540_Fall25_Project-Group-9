@@ -8,7 +8,7 @@ interface SupplyChain {
     string memory _name,
     string memory _description,
     string memory _location,
-    uint256 _quantity
+    string memory _quantity
     ) external returns (uint256);
 
     
@@ -22,16 +22,14 @@ interface SupplyChain {
         uint256 _productId,
         string memory _roleType,
         string memory _destination,
-        string memory _notes,
-        uint256 _quantityShipping
+        string memory _notes
     ) external;
 
     
     function receiveProduct(
         uint256 _productId,
         string memory _location,
-        string memory _notes,
-        uint256 _quantityReceived
+        string memory _notes
     ) external;
     
     function getProductInfo(uint256 _productId) external view returns (
@@ -41,9 +39,7 @@ interface SupplyChain {
         address,
         string memory,
         string memory,
-        uint256,
-        uint256,
-        uint256,
+        string memory,
         string memory,
         bool,
         uint256
@@ -68,6 +64,13 @@ interface SupplyChain {
         string[] memory,
         string[] memory
     );
+
+    function getRecentProducts(address _entity) external view returns (uint256[] memory);   
     
+    function getProductIdByQRHash(string memory _qrHash) external view returns (uint256);
+
     function getQRCodeHash(uint256 _productId) external view returns (string memory);
+
+    function markProductAsSold(uint256 _productId, string memory _customerInfo, string memory _notes) external;
+
 }

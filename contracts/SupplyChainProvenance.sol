@@ -9,11 +9,15 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
     uint256 public productCounter;
     mapping(uint256 => ProductLibrary.Product) private products;
     mapping(string => bool) private qrCodeExists;
+    mapping(string => uint256) private qrHashToProductId;
+    mapping(address => uint256[]) private entityProducts;
+    uint256 private constant MAX_RECENT_PRODUCTS = 10;
 
-    event ProductCreated(uint256 indexed productId, string name, address producer, uint256 quantity, uint256 timestamp);
+    event ProductCreated(uint256 indexed productId, string name, address producer, string quantity, uint256 timestamp);
     event ProductTested(uint256 indexed productId, address certifier, uint256 timestamp);
-    event ProductShipped(uint256 indexed productId, address from, string toRole, uint256 quantity, uint256 timestamp);
-    event ProductReceived(uint256 indexed productId, address receiver, uint256 quantity, uint256 timestamp);
+    event ProductShipped(uint256 indexed productId, address from, string toRole, uint256 timestamp);
+    event ProductReceived(uint256 indexed productId, address receiver, uint256 timestamp);
+    event ProductSold(uint256 indexed productId, address retailer, uint256 timestamp);
 
     // Helper function to check if address has ANY role
     function hasRole(address _addr) private view returns (bool) {
@@ -28,9 +32,8 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
         string memory _name, 
         string memory _description,
         string memory _location,
-        uint256 _quantity
+        string memory _quantity
     ) public override onlyProducer returns (uint256) {
-        require(_quantity > 0, "Quantity must be greater than 0");
         productCounter++;
         uint256 newProductId = productCounter;
         // Generate blockchain QR hash
@@ -48,8 +51,8 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
         newProduct.producer = msg.sender;
         newProduct.qrCodeHash = generatedQRHash;
         newProduct.totalQuantity = _quantity;
-        newProduct.quantityInTransit = 0;
-        newProduct.quantityDelivered = 0;
+        //newProduct.quantityInTransit = 0;
+        //newProduct.quantityDelivered = 0;
         newProduct.currentStatus = ProductLibrary.Status.Produced;
         newProduct.producedTimestamp = block.timestamp;
         newProduct.exists = true;
@@ -57,6 +60,10 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
         newProduct.currentHolder = msg.sender;
         newProduct.destinationRole = "";  // No destination yet
         qrCodeExists[generatedQRHash] = true;
+        qrHashToProductId[generatedQRHash] = newProductId;
+
+        addToEntityProducts(msg.sender, newProductId);
+
         newProduct.journey.push(ProductLibrary.JourneyLog({
             action: ProductLibrary.ActionType.Created,
             actor: msg.sender,
@@ -67,6 +74,11 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
         }));
         emit ProductCreated(newProductId, _name, msg.sender, _quantity, block.timestamp);
         return newProductId;
+    }
+
+    function getProductIdByQRHash(string memory _qrHash) public override view returns (uint256) {
+        require(qrCodeExists[_qrHash], "Invalid QR code");
+        return qrHashToProductId[_qrHash];
     }
 
     // Certifier tests product (optional)
@@ -87,6 +99,7 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
             location: _location,
             notes: _notes
         }));
+        addToEntityProducts(msg.sender, _productId);
         emit ProductTested(_productId, msg.sender, block.timestamp);
     }
 
@@ -95,15 +108,13 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
         uint256 _productId,
         string memory _roleType,  // "certifier", "distributor", "retailer"
         string memory _destination,
-        string memory _notes,
-        uint256 _quantityShipping
-    ) public override {
+        string memory _notes
+        ) public override {
         ProductLibrary.Product storage product = products[_productId];
         require(product.exists, "Product does not exist");
         require(hasRole(msg.sender), "Only authorized roles can ship");
         require(product.currentHolder == msg.sender, "Only current holder can ship");
         require(product.currentStatus != ProductLibrary.Status.InTransit, "Product already in transit");
-        require(_quantityShipping > 0, "Quantity must be greater than 0");
         require(!product.fullyDelivered, "Product already fully delivered");
         // Validate role type
         require(
@@ -114,7 +125,6 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
         );
         product.currentStatus = ProductLibrary.Status.InTransit;
         product.destinationRole = _roleType;
-        product.quantityInTransit = _quantityShipping;
         product.journey.push(ProductLibrary.JourneyLog({
             action: ProductLibrary.ActionType.Shipped,
             actor: msg.sender,
@@ -123,21 +133,23 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
             location: _destination,
             notes: string(abi.encodePacked("Shipped to ", _roleType, ". ", _notes))
         }));
-        emit ProductShipped(_productId, msg.sender, _roleType, _quantityShipping, block.timestamp);
+
+        addToEntityProducts(msg.sender, _productId);
+
+        emit ProductShipped(_productId, msg.sender, _roleType, block.timestamp);
     }
 
     // Anyone with matching role can receive the product
     function receiveProduct(
         uint256 _productId,
         string memory _location,
-        string memory _notes,
-        uint256 _quantityReceived
-    ) public override {
+        string memory _notes
+        ) public override {
         ProductLibrary.Product storage product = products[_productId];
         require(product.exists, "Product does not exist");
         require(hasRole(msg.sender), "Only authorized roles can receive");
         require(product.currentStatus == ProductLibrary.Status.InTransit, "Product must be in transit");
-        require(_quantityReceived > 0, "Quantity must be greater than 0");
+        //require(_quantityReceived > 0, "Quantity must be greater than 0");
         // Check if caller has the destination role
         bool hasDestinationRole = false;
         if (keccak256(bytes(product.destinationRole)) == keccak256(bytes("certifier"))) {
@@ -151,8 +163,8 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
         // Update holder and status
         product.currentHolder = msg.sender;
         product.currentStatus = ProductLibrary.Status.Delivered;
-        product.quantityDelivered += _quantityReceived;
-        product.quantityInTransit = 0;
+        //product.quantityDelivered += _quantityReceived;
+        //product.quantityInTransit = 0;
         product.destinationRole = "";
         // Check if this is final delivery (to retailer)
         if (retailers[msg.sender]) {
@@ -166,8 +178,39 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
             location: _location,
             notes: _notes
         }));
-        emit ProductReceived(_productId, msg.sender, _quantityReceived, block.timestamp);
+        addToEntityProducts(msg.sender, _productId);
+        emit ProductReceived(_productId, msg.sender, block.timestamp);
     }
+
+    // Retailer marks product as sold
+    function markProductAsSold(
+        uint256 _productId,
+        string memory _customerInfo,
+        string memory _notes
+    ) public override onlyRetailer {
+        ProductLibrary.Product storage product = products[_productId];
+        require(product.exists, "Product does not exist");
+        require(product.currentHolder == msg.sender, "Only current holder can mark as sold");
+        require(product.currentStatus != ProductLibrary.Status.Sold, "Product already sold");
+        
+        // Update status to Sold
+        product.currentStatus = ProductLibrary.Status.Sold;
+        
+        // Add journey log
+        product.journey.push(ProductLibrary.JourneyLog({
+            action: ProductLibrary.ActionType.Sold,
+            actor: msg.sender,
+            actorName: entityNames[msg.sender],
+            timestamp: block.timestamp,
+            location: _customerInfo,
+            notes: _notes
+        }));
+        
+        addToEntityProducts(msg.sender, _productId);
+        
+        emit ProductSold(_productId, msg.sender, block.timestamp);
+    }
+
 
     // Helper: Convert bytes32 to hex string
     function bytes32ToHexString(bytes32 data) private pure returns (string memory) {
@@ -184,13 +227,13 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
     // View functions remain the same
     function getProductInfo(uint256 _productId) public view override returns (
         uint256, string memory, string memory, address, string memory, 
-        string memory, uint256, uint256, uint256, string memory, bool, uint256
+        string memory,string memory, string memory, bool, uint256
     ) {
         require(products[_productId].exists, "Product does not exist");
         ProductLibrary.Product storage p = products[_productId];
         return (
             p.id, p.name, p.description, p.producer, entityNames[p.producer],
-            p.qrCodeHash, p.totalQuantity, p.quantityInTransit, p.quantityDelivered,
+            p.qrCodeHash, p.totalQuantity,
             ProductLibrary.statusToString(p.currentStatus), p.fullyDelivered, p.producedTimestamp
         );
     }
@@ -244,5 +287,31 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
     function getCurrentHolder(uint256 _productId) public view returns (address) {
         require(products[_productId].exists, "Product does not exist");
         return products[_productId].currentHolder;
+    }
+
+    function addToEntityProducts(address _entity, uint256 _productId) private {
+        uint256[] storage prods = entityProducts[_entity];
+        
+        // Add to beginning of array
+        if (prods.length >= MAX_RECENT_PRODUCTS) {
+            // Shift all elements and replace last one
+            for (uint256 i = prods.length - 1; i > 0; i--) {
+                prods[i] = prods[i - 1];
+            }
+            prods[0] = _productId;
+        } else {
+            // Add new product at the beginning
+            // First, make space
+            prods.push(0);
+            // Shift everything right
+            for (uint256 i = prods.length - 1; i > 0; i--) {
+                prods[i] = prods[i - 1];
+            }
+            prods[0] = _productId;
+        }
+    }
+
+    function getRecentProducts(address _entity) public view override returns (uint256[] memory) {
+        return entityProducts[_entity];
     }
 }
