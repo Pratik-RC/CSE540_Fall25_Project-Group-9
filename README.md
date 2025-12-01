@@ -36,6 +36,8 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 9. Run the following command to test the chain with a sample product
 10. npx hardhat run scripts/test_contract.js --network localhost
 
+**Once deployed copy the contract address and replace in .env files in root directory as well as backend folder. Also update the contract address in supply-chain-frontend/src/utils/contract.js**
+
 **IPFS Local Setup**
 1. Download the IPFS executable zip from : https://dist.ipfs.tech/kubo/v0.25.0/kubo_v0.25.0_windows-amd64.zip
 2. Extract the zip 
