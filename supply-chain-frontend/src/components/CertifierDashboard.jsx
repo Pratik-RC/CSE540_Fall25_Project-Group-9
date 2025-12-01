@@ -98,29 +98,20 @@ function CertifierDashboard({ account, signer }) {
     }
   };
 
-  // Search by QR hash
+  // Search by QR hash - uses backend journey service
   const handleSearchByHash = async () => {
     if (!searchHash) return;
     
     setLoading(true);
     try {
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const productId = await contract.getProductIdByQRHash(searchHash);
-      const id = Number(productId);
+      const response = await fetch(`http://localhost:3000/journey/${searchHash}`);
       
-      const info = await contract.getProductInfo(id);
-      const journey = await fetchProductJourney(id);
+      if (!response.ok) {
+        throw new Error('Product not found or invalid QR code');
+      }
       
-      setSearchedProduct({
-        id: id,
-        name: info[1],
-        description: info[2],
-        qrHash: info[5],
-        totalQty: info[6],
-        status: info[7].replace(/\s+/g, '').toLowerCase(),
-        journey: journey
-      });
-      
+      const product = await response.json();
+      setSearchedProduct(product);
     } catch (error) {
       console.error('Error searching product:', error);
       alert('Product not found or invalid QR code');
@@ -627,7 +618,7 @@ function CertifierDashboard({ account, signer }) {
                   {expandedProduct === product.id && (
                     <div className="product-details-expanded">
                       <p><strong>Description:</strong> {product.description}</p>
-                      <p><strong>Quantity:</strong> {product.totalQty}</p>
+                      <p><strong>Quantity:</strong> {product.quantity}</p>
                       <p><strong>QR Hash:</strong> {product.qrHash.substring(0, 30)}...</p>
                       
                       <h4>Journey History</h4>
@@ -701,7 +692,7 @@ function CertifierDashboard({ account, signer }) {
                   <p><strong>ID:</strong> {searchedProduct.id}</p>
                   <p><strong>Description:</strong> {searchedProduct.description}</p>
                   <p><strong>Status:</strong> <span className={`status-badge ${searchedProduct.status}`}>{searchedProduct.status}</span></p>
-                  <p><strong>Quantity:</strong> {searchedProduct.totalQty}</p>
+                  <p><strong>Quantity:</strong> {searchedProduct.quantity}</p>
                   
                   <h4>Journey History</h4>
                   <div className="journey-timeline">
@@ -714,7 +705,7 @@ function CertifierDashboard({ account, signer }) {
                           <p className="journey-location">{log.location}</p>
                           <p className="journey-notes">{log.notes}</p>
                           <p className="journey-time">
-                            {new Date(log.timestamp * 1000).toLocaleString()}
+                            {log.date}
                           </p>
                         </div>
                       </div>

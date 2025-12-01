@@ -37,43 +37,41 @@ function ProducerDashboard({ account, signer }) {
   const [shipLoading, setShipLoading] = useState(false);
 
   // Fetch recent products
-  // Fetch recent products
-const fetchRecentProducts = async () => {
-  setLoading(true);
-  try {
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-    const productIds = await contract.getRecentProducts(account);
-    
-    const products = [];
-    const seenIds = new Set(); 
-    
-    for (let i = 0; i < productIds.length; i++) {
-      const id = Number(productIds[i]);
-      if (id === 0) continue;
+  const fetchRecentProducts = async () => {
+    setLoading(true);
+    try {
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const productIds = await contract.getRecentProducts(account);
       
-      if (seenIds.has(id)) continue;
-      seenIds.add(id);
+      const products = [];
+      const seenIds = new Set(); 
       
-      const info = await contract.getProductInfo(id);
-      products.push({
-        id: id,
-        name: info[1],
-        description: info[2],
-        qrHash: info[5],
-        totalQty: info[6],
-        status: info[7].replace(/\s+/g, '').toLowerCase(), // Also normalize here
-        timestamp: Number(info[9])
-      });
+      for (let i = 0; i < productIds.length; i++) {
+        const id = Number(productIds[i]);
+        if (id === 0) continue;
+        
+        if (seenIds.has(id)) continue;
+        seenIds.add(id);
+        
+        const info = await contract.getProductInfo(id);
+        products.push({
+          id: id,
+          name: info[1],
+          description: info[2],
+          qrHash: info[5],
+          totalQty: info[6],
+          status: info[7].replace(/\s+/g, '').toLowerCase(),
+          timestamp: Number(info[9])
+        });
+      }
+      
+      setRecentProducts(products);
+    } catch (error) {
+      console.error('Error fetching recent products:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    setRecentProducts(products);
-  } catch (error) {
-    console.error('Error fetching recent products:', error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   // Fetch product journey
   const fetchProductJourney = async (productId) => {
@@ -100,29 +98,20 @@ const fetchRecentProducts = async () => {
     }
   };
 
-  // Search by QR hash
+  // Search by QR hash - uses backend journey service
   const handleSearchByHash = async () => {
     if (!searchHash) return;
     
     setLoading(true);
     try {
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const productId = await contract.getProductIdByQRHash(searchHash);
-      const id = Number(productId);
+      const response = await fetch(`http://localhost:3000/journey/${searchHash}`);
       
-      const info = await contract.getProductInfo(id);
-      const journey = await fetchProductJourney(id);
-     console.log('Full info array:', info);
-      setSearchedProduct({
-        id: id,
-        name: info[1],
-        description: info[2],
-        qrHash: info[5],
-        totalQty: info[6],
-        status: info[7],
-        journey: journey
-      });
+      if (!response.ok) {
+        throw new Error('Product not found or invalid QR code');
+      }
       
+      const product = await response.json();
+      setSearchedProduct(product);
     } catch (error) {
       console.error('Error searching product:', error);
       alert('Product not found or invalid QR code');
@@ -143,9 +132,8 @@ const fetchRecentProducts = async () => {
     } catch (error) {
       console.error('Error scanning QR image:', error);
       alert('Could not read QR code from image');
-    }
-    finally {
-      e.target.value = null; // Reset file input
+    } finally {
+      e.target.value = null;
     }
   };
 
@@ -446,7 +434,7 @@ const fetchRecentProducts = async () => {
                   {expandedProduct === product.id && (
                     <div className="product-details-expanded">
                       <p><strong>Description:</strong> {product.description}</p>
-                      <p><strong>Quantity:</strong> {product.totalQty}</p>
+                      <p><strong>Quantity:</strong> {product.quantity}</p>
                       <p><strong>QR Hash:</strong> {product.qrHash.substring(0, 30)}...</p>
                       
                       <h4>Journey History</h4>
@@ -460,7 +448,7 @@ const fetchRecentProducts = async () => {
                               <p className="journey-location">{log.location}</p>
                               <p className="journey-notes">{log.notes}</p>
                               <p className="journey-time">
-                                {new Date(log.timestamp * 1000).toLocaleString()}
+                                {log.date}
                               </p>
                             </div>
                           </div>
@@ -520,7 +508,7 @@ const fetchRecentProducts = async () => {
                   <p><strong>ID:</strong> {searchedProduct.id}</p>
                   <p><strong>Description:</strong> {searchedProduct.description}</p>
                   <p><strong>Status:</strong> <span className={`status-badge ${searchedProduct.status.toLowerCase()}`}>{searchedProduct.status}</span></p>
-                  <p><strong>Quantity:</strong> {searchedProduct.totalQty}</p>
+                  <p><strong>Quantity:</strong> {searchedProduct.quantity}</p>
                   
                   <h4>Journey History</h4>
                   <div className="journey-timeline">
@@ -533,7 +521,7 @@ const fetchRecentProducts = async () => {
                           <p className="journey-location">{log.location}</p>
                           <p className="journey-notes">{log.notes}</p>
                           <p className="journey-time">
-                            {new Date(log.timestamp * 1000).toLocaleString()}
+                            {log.date}
                           </p>
                         </div>
                       </div>
@@ -587,9 +575,9 @@ const fetchRecentProducts = async () => {
                       setShipError('Could not read QR code or product not found');
                     } finally {
                       setShipLoading(false);
-                      e.target.value = null; // Reset file input
+                      e.target.value = null;
                     }
-}}
+                  }}
                   className="file-input"
                 />
               </div>

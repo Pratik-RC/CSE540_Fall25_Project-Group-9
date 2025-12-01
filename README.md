@@ -38,7 +38,15 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 
 **IPFS Local Setup**
 1. Download the IPFS executable zip from : https://dist.ipfs.tech/kubo/v0.25.0/kubo_v0.25.0_windows-amd64.zip
-2. Extract the zip and run the ipfs.exe to start local ipfs server.
+2. Extract the zip 
+3. Add the ipfs executable to path variables ( for windows : cp ipfs.exe /c/Windows/System32/)
+4. open a terminal and run ipfs init (first time only)
+5. run ipfs daemon to start the local IPFS server
+
+**Backend setup Instructions**
+1. To run the backend, cd into "supplychainprovenancesystem / backend"
+2. run npm init (when running first time)
+3. run npm start to start the backend server.
 
 ** Metamask Wallet Setup instructions ** 
 1. Add metamask wallet chrom extension to your browser and create an account / login if u already did
@@ -87,7 +95,4 @@ Defines product structure:
 - Journey logs (history trail)
 
 #### Future Enhancements
-
-- Add frontend UI to scan QR codes and fetch on-chain history (real-time verification)
-- Integrate IPFS for storing certificates and test reports with on-chain hashes
 - Extend to a multi-product batching system with batch IDs, aggregated tracking, and batch-level state transitions

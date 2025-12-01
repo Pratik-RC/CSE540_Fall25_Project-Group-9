@@ -5,8 +5,10 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const cors = require('cors');
 
 // Connect to blockchain
+app.use(cors());
 const provider = new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_RPC_URL);
 
 // Contract ABI 
@@ -123,9 +125,14 @@ app.get('/journey/:qrHash', async (req, res) => {
     const product = {
       id: Number(info[0]),
       name: info[1],
+      description: info[2],
+      quantity: info[6],
+      producer: info[3],
+      producerName: info[4],
       status: info[7],
       ipfsHash: info[10],
-      archived: info[11]
+      archived: info[11],
+      createdDate: new Date(Number(info[9]) * 1000).toLocaleString()
     };
     
     // If archived, get journey from IPFS

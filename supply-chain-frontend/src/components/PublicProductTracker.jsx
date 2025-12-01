@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { ethers } from 'ethers';
 import QrScanner from 'qr-scanner';
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../utils/contract';
 import './PublicProductTracker.css';
 
 function PublicProductTracker() {
@@ -9,15 +7,6 @@ function PublicProductTracker() {
   const [searchHash, setSearchHash] = useState('');
   const [product, setProduct] = useState(null);
   const [error, setError] = useState('');
-
-  // Create provider WITHOUT wallet - just connects to blockchain
-  const getProvider = () => {
-    // For localhost
-    return new ethers.JsonRpcProvider('http://localhost:8545');
-    
-    // For production (e.g., Mainnet, Sepolia testnet):
-    // return new ethers.providers.JsonRpcProvider('https://eth-mainnet.alchemyapi.io/v2/YOUR-API-KEY');
-  };
 
   const searchProduct = async () => {
     if (!searchHash) return;
@@ -27,45 +16,14 @@ function PublicProductTracker() {
     setProduct(null);
     
     try {
-      const provider = getProvider();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      const response = await fetch(`http://localhost:3000/journey/${searchHash}`);
       
-      // Read product ID from QR hash
-      const productId = await contract.getProductIdByQRHash(searchHash);
-      const id = Number(productId);
-      
-      // Read product info
-      const info = await contract.getProductInfo(id);
-      
-      // Read journey logs
-      const logs = await contract.getAllJourneyLogs(id);
-      
-      const journey = [];
-      for (let i = 0; i < logs[0].length; i++) {
-        journey.push({
-          action: logs[0][i],
-          actorName: logs[1][i],
-          actor: logs[2][i],
-          timestamp: Number(logs[3][i]),
-          location: logs[4][i],
-          notes: logs[5][i]
-        });
+      if (!response.ok) {
+        throw new Error('Product not found or invalid QR code');
       }
       
-      setProduct({
-        id: id,
-        name: info[1],
-        description: info[2],
-        producer: info[3],
-        producerName: info[4],
-        qrHash: info[5],
-        quantity: info[6],
-        status: info[7],
-        fullyDelivered: info[8],
-        timestamp: Number(info[9]),
-        journey: journey
-      });
-      
+      const productData = await response.json();
+      setProduct(productData);
     } catch (err) {
       console.error('Error fetching product:', err);
       setError('Product not found or invalid QR code');
@@ -152,13 +110,13 @@ function PublicProductTracker() {
               <strong>Description:</strong> {product.description}
             </div>
             <div className="detail-row">
-              <strong>Quantity:</strong> {product.quantity}
+              <strong>Quantity:</strong> {product.quantity }
             </div>
             <div className="detail-row">
               <strong>Producer:</strong> {product.producerName}
             </div>
             <div className="detail-row">
-              <strong>Created:</strong> {new Date(product.timestamp * 1000).toLocaleString()}
+              <strong>Created:</strong> {product.createdDate}
             </div>
           </div>
           
@@ -174,7 +132,7 @@ function PublicProductTracker() {
                     <p className="step-location">📍 {log.location}</p>
                     <p className="step-notes">{log.notes}</p>
                     <p className="step-time">
-                      {new Date(log.timestamp * 1000).toLocaleString()}
+                      {log.date}
                     </p>
                   </div>
                 </div>
