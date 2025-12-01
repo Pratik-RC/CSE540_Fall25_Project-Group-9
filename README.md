@@ -22,6 +22,7 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 
 - Node.js
 - Hardhat (installed through the project dependencies)
+- IPFS local daemon running
 
 **Use The following instructions to run and test smart contract**
 
@@ -47,7 +48,7 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 
 **Backend setup Instructions**
 1. To run the backend, cd into "supplychainprovenancesystem / backend"
-2. run npm init (when running first time)
+2. run npm install (when running first time)
 3. run npm start to start the backend server.
 
 ** Metamask Wallet Setup instructions ** 
