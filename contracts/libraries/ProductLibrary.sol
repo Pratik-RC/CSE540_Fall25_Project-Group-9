@@ -44,6 +44,8 @@ library ProductLibrary {
         address currentHolder;
         string destinationRole;  // "certifier", "distributor", "retailer"
         JourneyLog[] journey;
+        bool archived;
+        string ipfsHash;
     }
 
     

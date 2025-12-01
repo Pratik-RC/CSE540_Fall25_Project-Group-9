@@ -18,6 +18,10 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
     event ProductShipped(uint256 indexed productId, address from, string toRole, uint256 timestamp);
     event ProductReceived(uint256 indexed productId, address receiver, uint256 timestamp);
     event ProductSold(uint256 indexed productId, address retailer, uint256 timestamp);
+    event ProductsBatchArchived(uint256[] indexed productIds, string ipfsHash);
+    event ProductArchived(uint256 indexed productId, string ipfsHash);
+
+
 
     // Helper function to check if address has ANY role
     function hasRole(address _addr) private view returns (bool) {
@@ -227,14 +231,15 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
     // View functions remain the same
     function getProductInfo(uint256 _productId) public view override returns (
         uint256, string memory, string memory, address, string memory, 
-        string memory,string memory, string memory, bool, uint256
+        string memory,string memory, string memory, bool, uint256, string memory, bool
     ) {
         require(products[_productId].exists, "Product does not exist");
         ProductLibrary.Product storage p = products[_productId];
         return (
             p.id, p.name, p.description, p.producer, entityNames[p.producer],
             p.qrCodeHash, p.totalQuantity,
-            ProductLibrary.statusToString(p.currentStatus), p.fullyDelivered, p.producedTimestamp
+            ProductLibrary.statusToString(p.currentStatus), p.fullyDelivered, p.producedTimestamp,
+            p.ipfsHash, p.archived
         );
     }
 
@@ -314,4 +319,37 @@ contract SupplyChainProvenance is RoleManagement, SupplyChain {
     function getRecentProducts(address _entity) public view override returns (uint256[] memory) {
         return entityProducts[_entity];
     }
+
+    function batchArchiveProducts(uint256[] memory _productIds, string memory _ipfsHash) public override {
+        for (uint256 i = 0; i < _productIds.length; i++) {
+            require(products[_productIds[i]].exists, "Product does not exist");
+            require(products[_productIds[i]].currentStatus == ProductLibrary.Status.Sold || 
+                    products[_productIds[i]].currentStatus == ProductLibrary.Status.Delivered, 
+                    "Product not in final state");
+            
+            products[_productIds[i]].ipfsHash = _ipfsHash;
+        }
+        
+        emit ProductsBatchArchived(_productIds, _ipfsHash);
+    }
+
+    function archiveProduct(uint256 _productId, string memory _ipfsHash) public onlyOwner {
+    require(products[_productId].exists, "Product does not exist");
+    require(products[_productId].currentStatus == ProductLibrary.Status.Sold || 
+            products[_productId].currentStatus == ProductLibrary.Status.Delivered, 
+            "Product not in final state");
+    
+    // Set archive flag and IPFS hash
+    products[_productId].archived = true;
+    products[_productId].ipfsHash = _ipfsHash;
+    
+    // Clear detailed data (optional, but recommended)
+    delete products[_productId].journey;
+    products[_productId].name = "";
+    products[_productId].description = "";
+    
+    emit ProductArchived(_productId, _ipfsHash);
+}
+
+
 }

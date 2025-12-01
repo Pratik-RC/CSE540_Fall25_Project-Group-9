@@ -36,6 +36,10 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 9. Run the following command to test the chain with a sample product
 10. npx hardhat run scripts/test_contract.js --network localhost
 
+**IPFS Local Setup**
+1. Download the IPFS executable zip from : https://dist.ipfs.tech/kubo/v0.25.0/kubo_v0.25.0_windows-amd64.zip
+2. Extract the zip and run the ipfs.exe to start local ipfs server.
+
 ** Metamask Wallet Setup instructions ** 
 1. Add metamask wallet chrom extension to your browser and create an account / login if u already did
 2. Open the metamask extension in your browser window -> Accounts -> Add wallet -> Import An account -> Paste the private key of the wallet there

@@ -42,7 +42,9 @@ interface SupplyChain {
         string memory,
         string memory,
         bool,
-        uint256
+        uint256,
+        string memory,
+        bool
     );
     
     function getJourneyLogCount(uint256 _productId) external view returns (uint256);
@@ -72,5 +74,7 @@ interface SupplyChain {
     function getQRCodeHash(uint256 _productId) external view returns (string memory);
 
     function markProductAsSold(uint256 _productId, string memory _customerInfo, string memory _notes) external;
+
+    function batchArchiveProducts(uint256[] memory _productIds, string memory _ipfsHash) external;
 
 }
