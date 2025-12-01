@@ -53,7 +53,7 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 ** Metamask Wallet Setup instructions ** 
 1. Add metamask wallet chrom extension to your browser and create an account / login if u already did
 2. Open the metamask extension in your browser window -> Accounts -> Add wallet -> Import An account -> Paste the private key of the wallet there
-3. This will link the respective wallet to the metamask extension. Repeat the step 2 from here on whenever we need to add a new entity to this chain.
+3. This will link the respective wallet to the metamask extension. Repeat the step 2 from here on whenever we need to add a new entity to this chain. Next go ahead and add the local host network and disable all other networks from metamask. (**This is important as metamask connects to mainnet by default**)
 4. We will be working with wallets created by hardhat at node creation for this project.
 5. The first wallet is hardcoded to be the owner of this chain, so use the first private key listed when running npx hardhat node and add it to metamask. (We will refer this as contract owner from here on)
 6. Add the following accounts to your metamask wallet for testing purposes :
