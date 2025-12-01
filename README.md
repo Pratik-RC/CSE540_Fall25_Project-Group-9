@@ -62,6 +62,7 @@ Each product is assigned a **QR code hash** generated on-chain, which can be sca
 9. Certifier, pvt key : 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
 10. Distributor, pvt key : 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
 11. Retailer, pvt key : 0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a
+12. Everytime you reopen the browser, the wallet you wanna use needs to be connected to network from metamask. When u open the metamask extension it will prompt you to connect to network (Local host), click connect before running frontend. (wont happen first time when u added the wallet but later when u reopen, this is needed)
 
 **User-Interface instructions**
 1. cd into the supply-chain-frontend directory
